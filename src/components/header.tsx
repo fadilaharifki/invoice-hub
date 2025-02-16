@@ -15,7 +15,7 @@ import {
   ExpandMoreRounded,
 } from "@mui/icons-material";
 import { styled } from "@mui/system";
-import CustomToggle from "./invoices/customSwitch";
+import CustomToggle from "./custom-switch";
 import { useState } from "react";
 
 const StyledBadge = styled(Badge)<BadgeProps>(({ theme }) => ({

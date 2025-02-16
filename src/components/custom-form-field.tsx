@@ -5,6 +5,7 @@ import {
   InputLabel,
   Autocomplete,
   IconButton,
+  SxProps,
 } from "@mui/material";
 import { Control, Controller, FieldValues, Path } from "react-hook-form";
 import { NumericFormat } from "react-number-format";
@@ -15,7 +16,8 @@ import {
 } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
-
+import { InputProps as MuiInputProps } from "@mui/material/Input";
+import clsx from "clsx";
 interface CustomFormFieldProps<T extends FieldValues> {
   name: Path<T>;
   control: Control<T>;
@@ -26,6 +28,11 @@ interface CustomFormFieldProps<T extends FieldValues> {
   placeholder?: string;
   prefix?: string;
   size?: "small" | "medium";
+  InputProps?: MuiInputProps;
+  className?: string;
+  sx?: SxProps;
+  showClearButton?: boolean;
+  labelOutside?: boolean;
 }
 
 const CustomFormField = <T extends FieldValues>({
@@ -38,6 +45,11 @@ const CustomFormField = <T extends FieldValues>({
   placeholder,
   prefix,
   size = "small",
+  InputProps,
+  className,
+  sx,
+  showClearButton = true,
+  labelOutside = true,
 }: CustomFormFieldProps<T>) => {
   const [open, setOpen] = useState(false);
   return (
@@ -45,15 +57,18 @@ const CustomFormField = <T extends FieldValues>({
       name={name as Path<T>}
       control={control}
       render={({ field, fieldState }) => (
-        <div style={{ marginBottom: "1rem" }}>
-          <InputLabel sx={{ fontWeight: 500, marginBottom: 0.5 }}>
-            {label}
-            {required && <span style={{ color: "#ff0000" }}> *</span>}
-          </InputLabel>
+        <div className="flex flex-col flex-1 mb-3">
+          {labelOutside && (
+            <InputLabel sx={{ fontWeight: 500, marginBottom: 0.5 }}>
+              {label}
+              {required && <span style={{ color: "#ff0000" }}> *</span>}
+            </InputLabel>
+          )}
 
           {type === "currency" ? (
             <NumericFormat
               {...field}
+              className={clsx("", className)}
               customInput={TextField}
               thousandSeparator=","
               decimalSeparator="."
@@ -63,6 +78,7 @@ const CustomFormField = <T extends FieldValues>({
               helperText={fieldState.error?.message}
               placeholder={placeholder}
               size={size}
+              sx={{ ...sx }}
               InputProps={{
                 style: { background: "#F0F0F0" },
                 startAdornment: (
@@ -71,23 +87,26 @@ const CustomFormField = <T extends FieldValues>({
                 inputProps: {
                   style: { background: "white", paddingLeft: 10 },
                 },
-                endAdornment: field.value ? (
-                  <InputAdornment position="end">
-                    <IconButton
-                      onClick={() => field.onChange("")}
-                      edge="end"
-                      size="small"
-                    >
-                      <ClearIcon fontSize="small" />
-                    </IconButton>
-                  </InputAdornment>
-                ) : null,
+                endAdornment:
+                  showClearButton && field.value ? (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={() => field.onChange("")}
+                        edge="end"
+                        size="small"
+                      >
+                        <ClearIcon fontSize="small" />
+                      </IconButton>
+                    </InputAdornment>
+                  ) : null,
+                ...InputProps,
               }}
               onValueChange={(values) => field.onChange(values.value)}
             />
           ) : type === "select" ? (
             <Autocomplete
               {...field}
+              fullWidth
               options={options}
               onChange={(_, value) => field.onChange(value)}
               isOptionEqualToValue={(option, value) =>
@@ -99,11 +118,14 @@ const CustomFormField = <T extends FieldValues>({
               renderInput={(params) => (
                 <TextField
                   {...params}
+                  className={clsx("", className)}
+                  fullWidth
                   required={required}
                   error={!!fieldState.error}
                   helperText={fieldState.error?.message}
                   placeholder={placeholder}
                   size={size}
+                  sx={{ ...sx }}
                 />
               )}
             />
@@ -111,11 +133,13 @@ const CustomFormField = <T extends FieldValues>({
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <DatePicker
                 {...field}
+                className={clsx("", className)}
                 open={open}
                 onOpen={() => setOpen(true)}
                 onClose={() => setOpen(false)}
                 disableOpenPicker
                 format="DD/MM/YYYY"
+                sx={{ ...sx }}
                 slotProps={{
                   textField: {
                     required,
@@ -127,17 +151,19 @@ const CustomFormField = <T extends FieldValues>({
                     inputProps: { readOnly: true },
                     onClick: () => setOpen(true),
                     InputProps: {
-                      endAdornment: field.value ? (
-                        <InputAdornment position="end">
-                          <IconButton
-                            onClick={() => field.onChange(null)}
-                            edge="end"
-                            size="small"
-                          >
-                            <ClearIcon fontSize="small" />
-                          </IconButton>
-                        </InputAdornment>
-                      ) : null,
+                      endAdornment:
+                        showClearButton && field.value ? (
+                          <InputAdornment position="end">
+                            <IconButton
+                              onClick={() => field.onChange(null)}
+                              edge="end"
+                              size="small"
+                            >
+                              <ClearIcon fontSize="small" />
+                            </IconButton>
+                          </InputAdornment>
+                        ) : null,
+                      ...InputProps,
                     },
                   },
                 }}
@@ -149,27 +175,31 @@ const CustomFormField = <T extends FieldValues>({
             </LocalizationProvider>
           ) : (
             <TextField
+              className={clsx("", className)}
               fullWidth
               type={type}
               required={required}
               error={!!fieldState.error}
               helperText={fieldState.error?.message}
+              sx={{ ...sx }}
               {...field}
               variant="outlined"
               size={size}
               placeholder={placeholder}
               InputProps={{
-                endAdornment: field.value ? (
-                  <InputAdornment position="end">
-                    <IconButton
-                      onClick={() => field.onChange("")}
-                      edge="end"
-                      size="small"
-                    >
-                      <ClearIcon fontSize="small" />
-                    </IconButton>
-                  </InputAdornment>
-                ) : null,
+                endAdornment:
+                  showClearButton && field.value ? (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={() => field.onChange("")}
+                        edge="end"
+                        size="small"
+                      >
+                        <ClearIcon fontSize="small" />
+                      </IconButton>
+                    </InputAdornment>
+                  ) : null,
+                ...InputProps,
               }}
             />
           )}
