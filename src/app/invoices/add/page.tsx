@@ -2,7 +2,15 @@
 import { useState } from "react";
 import type React from "react";
 
-import { Box, Button, Card, Typography, Alert, Grid2 } from "@mui/material";
+import {
+  Box,
+  Button,
+  Card,
+  Typography,
+  Alert,
+  Grid2,
+  Divider,
+} from "@mui/material";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -13,7 +21,7 @@ const invoiceSchema = z.object({
   number: z.string().min(1, "Number is required"),
   dueDate: z.string().min(1, "Due Date is required"),
   amount: z.string().min(1, "Amount is required"),
-  status: z.enum(["pending", "paid", "overdue"], {
+  status: z.enum(["pending", "paid", "overdue", ""], {
     errorMap: () => ({ message: "Status is required" }),
   }),
 });
@@ -44,22 +52,27 @@ export default function AddInvoicePage() {
   };
 
   return (
-    <Box>
-      <Typography variant="h4" gutterBottom>
+    <Box sx={{ px: 15, py: 3 }}>
+      <Typography
+        variant="h4"
+        gutterBottom
+        sx={{ fontWeight: "700", paddingBottom: 3 }}
+      >
         Add Invoice
       </Typography>
 
-      <Card sx={{ p: 4 }}>
-        <Typography variant="h6" gutterBottom>
+      <Card>
+        <Typography sx={{ px: 2, py: 1 }} variant="h6">
           Invoice Form
         </Typography>
-
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <Divider />
+        <form className="p-5" onSubmit={handleSubmit(onSubmit)}>
           <Grid2 direction={"column"} container spacing={3}>
             <Grid2
               direction={"row"}
               container
-              spacing={3}
+              rowSpacing={1}
+              columnSpacing={3}
               sx={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)" }}
             >
               <Grid2>
@@ -97,6 +110,8 @@ export default function AddInvoicePage() {
                   label="Amount"
                   required
                   type="currency"
+                  placeholder="Enter your invoice amount"
+                  prefix="Rp "
                   control={control}
                 />
               </Grid2>
@@ -107,6 +122,7 @@ export default function AddInvoicePage() {
                   required
                   type="select"
                   control={control}
+                  placeholder="Choose the status"
                   options={[
                     { label: "Pending", value: "pending" },
                     { label: "Paid", value: "paid" },

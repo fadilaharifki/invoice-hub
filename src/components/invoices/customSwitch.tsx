@@ -2,14 +2,13 @@
 
 import type React from "react";
 import { Switch, styled } from "@mui/material";
-import { borderRadius, padding } from "@mui/system";
 
 interface CustomSwitchProps {
   checked?: boolean;
   onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-const UISwitch = styled(Switch)(({ theme }) => ({
+const UISwitch = styled(Switch)(() => ({
   width: 56,
   height: 32,
   padding: 0,

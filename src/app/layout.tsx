@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v14-appRouter";
 import { Box, CssBaseline, ThemeProvider } from "@mui/material";
+import "./globals.css";
 
 import { theme } from "@/lib/schemas/theme";
 import Sidebar from "@/components/sidebar";
