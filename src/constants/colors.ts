@@ -23,3 +23,8 @@ export const getTextColor = (status: string) => {
       return "default";
   }
 };
+
+export const colors = {
+  green: "#E1F8F0",
+  greenLime: "#34d399",
+};

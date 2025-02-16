@@ -18,6 +18,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
 import { InputProps as MuiInputProps } from "@mui/material/Input";
 import clsx from "clsx";
+import { ExpandMoreRounded } from "@mui/icons-material";
 interface CustomFormFieldProps<T extends FieldValues> {
   name: Path<T>;
   control: Control<T>;
@@ -78,7 +79,6 @@ const CustomFormField = <T extends FieldValues>({
               thousandSeparator=","
               decimalSeparator="."
               fullWidth
-              // required={required}
               error={!!fieldState.error}
               helperText={fieldState.error?.message}
               placeholder={placeholder}
@@ -113,6 +113,7 @@ const CustomFormField = <T extends FieldValues>({
               {...field}
               fullWidth
               options={options}
+              popupIcon={<ExpandMoreRounded />}
               onChange={(_, value) => {
                 if (Array.isArray(value)) return;
 
@@ -131,7 +132,6 @@ const CustomFormField = <T extends FieldValues>({
                   {...params}
                   className={clsx("", className)}
                   fullWidth
-                  // required={required}
                   error={!!fieldState.error}
                   helperText={fieldState.error?.message}
                   placeholder={placeholder}
@@ -153,7 +153,6 @@ const CustomFormField = <T extends FieldValues>({
                 sx={{ ...sx }}
                 slotProps={{
                   textField: {
-                    // required,
                     placeholder: "DD/MM/YYYY",
                     fullWidth: true,
                     size: "small",
@@ -189,7 +188,6 @@ const CustomFormField = <T extends FieldValues>({
               className={clsx("", className)}
               fullWidth
               type={type}
-              // required={required}
               error={!!fieldState.error}
               helperText={fieldState.error?.message}
               sx={{ ...sx }}

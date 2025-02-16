@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type React from "react";
 
 import {
@@ -16,7 +16,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import CustomFormField from "@/components/custom-form-field";
-import { Add } from "@mui/icons-material";
+import { Add, CheckBox } from "@mui/icons-material";
+import useToast from "@/hooks/useToast";
+import { colors } from "@/constants/colors";
 
 const invoiceSchema = z.object({
   name: z.string().min(3, "Name must be at least 3 characters"),
@@ -31,6 +33,8 @@ const invoiceSchema = z.object({
 type InvoiceFormData = z.infer<typeof invoiceSchema>;
 
 export default function AddInvoiceComponent() {
+  const formRef = useRef<HTMLFormElement>(null);
+  const { customToast } = useToast();
   const { control, handleSubmit } = useForm<InvoiceFormData>({
     resolver: zodResolver(invoiceSchema),
     defaultValues: {
@@ -45,8 +49,14 @@ export default function AddInvoiceComponent() {
   const [showSuccess] = useState(false);
 
   const onSubmit = (data: InvoiceFormData) => {
+    customToast(formRef, {
+      title: "Invoice added successfully!",
+      description:
+        "You can view and manage your invoice in the 'My Invoices' section.",
+      icon: <CheckBox sx={{ color: colors.greenLime }} />,
+    });
     console.log("Form Data:", data);
-    alert("Invoice successfully added!");
+    // alert("Invoice successfully added!");
   };
 
   return (
@@ -64,7 +74,7 @@ export default function AddInvoiceComponent() {
           Invoice Form
         </Typography>
         <Divider />
-        <form className="p-5" onSubmit={handleSubmit(onSubmit)}>
+        <form ref={formRef} className="p-5" onSubmit={handleSubmit(onSubmit)}>
           <Grid2 direction={"column"} container spacing={1}>
             <Grid2
               direction={"row"}
