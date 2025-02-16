@@ -14,11 +14,11 @@ export const getStatusColor = (status: string) => {
 export const getTextColor = (status: string) => {
   switch (status) {
     case "Paid":
-      return "#EDF1F7";
+      return "#c0f0e1";
     case "Unpaid":
       return "#f5e4e8";
     case "Pending":
-      return "#FFF8EC";
+      return "#faecd4";
     default:
       return "default";
   }

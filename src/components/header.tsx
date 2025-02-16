@@ -17,6 +17,7 @@ import {
 import { styled } from "@mui/system";
 import CustomToggle from "./custom-switch";
 import { useState } from "react";
+import stringAvatar from "@/utils/initialName";
 
 const StyledBadge = styled(Badge)<BadgeProps>(({ theme }) => ({
   "& .MuiBadge-badge": {
@@ -28,6 +29,7 @@ const StyledBadge = styled(Badge)<BadgeProps>(({ theme }) => ({
 
 export default function Header() {
   const [checked, setChecked] = useState(false);
+  const user = "John Doe";
   return (
     <AppBar
       position="static"
@@ -67,12 +69,12 @@ export default function Header() {
               alignItems: "end",
             }}
           >
-            <Typography variant="body2">John Doe</Typography>
+            <Typography variant="body2">{user}</Typography>
             <Typography variant="caption" color="text.secondary">
               Verified Member
             </Typography>
           </Box>
-          <Avatar sx={{ width: 32, height: 32 }}>JD</Avatar>
+          <Avatar {...stringAvatar(user)}></Avatar>
         </Box>
         <IconButton size="small">
           <ExpandMoreRounded />

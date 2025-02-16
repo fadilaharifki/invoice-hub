@@ -1,4 +1,5 @@
 "use client";
+
 import { useState } from "react";
 import type React from "react";
 
@@ -22,7 +23,7 @@ const invoiceSchema = z.object({
   number: z.string().min(1, "Number is required"),
   dueDate: z.string().min(1, "Due Date is required"),
   amount: z.string().min(1, "Amount is required"),
-  status: z.enum(["pending", "paid", "overdue", ""], {
+  status: z.enum(["pending", "paid", "overdue"], {
     errorMap: () => ({ message: "Status is required" }),
   }),
 });
@@ -30,18 +31,14 @@ const invoiceSchema = z.object({
 type InvoiceFormData = z.infer<typeof invoiceSchema>;
 
 export default function AddInvoiceComponent() {
-  const {
-    control,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<InvoiceFormData>({
+  const { control, handleSubmit } = useForm<InvoiceFormData>({
     resolver: zodResolver(invoiceSchema),
     defaultValues: {
       name: "",
       number: "",
       dueDate: "",
       amount: "",
-      status: "",
+      status: undefined,
     },
   });
 
@@ -68,7 +65,7 @@ export default function AddInvoiceComponent() {
         </Typography>
         <Divider />
         <form className="p-5" onSubmit={handleSubmit(onSubmit)}>
-          <Grid2 direction={"column"} container spacing={3}>
+          <Grid2 direction={"column"} container spacing={1}>
             <Grid2
               direction={"row"}
               container

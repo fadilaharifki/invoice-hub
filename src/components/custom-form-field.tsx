@@ -57,7 +57,12 @@ const CustomFormField = <T extends FieldValues>({
       name={name as Path<T>}
       control={control}
       render={({ field, fieldState }) => (
-        <div className="flex flex-col flex-1 mb-3">
+        <div
+          className={clsx(
+            "flex flex-col flex-1",
+            !fieldState.error ? "mb-6" : "mb-0"
+          )}
+        >
           {labelOutside && (
             <InputLabel sx={{ fontWeight: 500, marginBottom: 0.5 }}>
               {label}
@@ -73,7 +78,7 @@ const CustomFormField = <T extends FieldValues>({
               thousandSeparator=","
               decimalSeparator="."
               fullWidth
-              required={required}
+              // required={required}
               error={!!fieldState.error}
               helperText={fieldState.error?.message}
               placeholder={placeholder}
@@ -108,10 +113,16 @@ const CustomFormField = <T extends FieldValues>({
               {...field}
               fullWidth
               options={options}
-              onChange={(_, value) => field.onChange(value)}
-              isOptionEqualToValue={(option, value) =>
-                option.value === value?.value
-              }
+              onChange={(_, value) => {
+                if (Array.isArray(value)) return;
+
+                const val = value?.value;
+                field.onChange(val ?? undefined);
+              }}
+              isOptionEqualToValue={(option, value) => {
+                if (!value || Array.isArray(value)) return false;
+                return option.value === value.value;
+              }}
               getOptionLabel={(option) =>
                 typeof option === "string" ? option : option?.label || ""
               }
@@ -120,7 +131,7 @@ const CustomFormField = <T extends FieldValues>({
                   {...params}
                   className={clsx("", className)}
                   fullWidth
-                  required={required}
+                  // required={required}
                   error={!!fieldState.error}
                   helperText={fieldState.error?.message}
                   placeholder={placeholder}
@@ -142,7 +153,7 @@ const CustomFormField = <T extends FieldValues>({
                 sx={{ ...sx }}
                 slotProps={{
                   textField: {
-                    required,
+                    // required,
                     placeholder: "DD/MM/YYYY",
                     fullWidth: true,
                     size: "small",
@@ -178,7 +189,7 @@ const CustomFormField = <T extends FieldValues>({
               className={clsx("", className)}
               fullWidth
               type={type}
-              required={required}
+              // required={required}
               error={!!fieldState.error}
               helperText={fieldState.error?.message}
               sx={{ ...sx }}
