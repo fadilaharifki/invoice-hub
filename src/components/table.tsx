@@ -45,15 +45,16 @@ export default function InvoiceTable<T extends object>({
   });
 
   return (
-    <TableContainer component={Paper} elevation={1}>
+    <TableContainer component={Paper} elevation={1} sx={{ p: 2 }}>
       <Table sx={{ minWidth: 650 }}>
-        <TableHead>
+        <TableHead className="bg-gray-50">
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => (
-                <TableCell key={header.id}>
+                <TableCell sx={{ borderBottom: "none" }} key={header.id}>
                   {header.isPlaceholder ? null : (
                     <TableSortLabel
+                      sx={{ fontWeight: "700" }}
                       active={header.column.getIsSorted() !== false}
                       direction={
                         header.column.getIsSorted() === "desc" ? "desc" : "asc"

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   Container,
   Typography,
@@ -17,14 +17,12 @@ import CustomFormField from "@/components/custom-form-field";
 import { useForm } from "react-hook-form";
 import { ViewHeadlineRounded } from "@mui/icons-material";
 import { getStatusColor, getTextColor } from "@/constants/colors";
-
-interface Invoice {
-  id: string;
-  name: string;
-  dueDate: string;
-  status: "Paid" | "Unpaid" | "Pending";
-  amount: number;
-}
+import { useGetInvoice } from "@/hooks/useInvoices";
+import { InvoiceInterface } from "@/interface/invoices";
+import { Params } from "@/interface/base";
+import { addDoc, collection } from "firebase/firestore";
+import { db } from "@/service/firebase-config";
+import { v4 as uuidv4 } from "uuid";
 
 const options = [
   {
@@ -45,39 +43,85 @@ const options = [
   },
 ];
 
-const demoInvoices: Invoice[] = [
-  {
-    id: "INV202501",
-    name: "Internet Subscription",
-    dueDate: "Jan 13,2025",
-    status: "Paid",
-    amount: 582901,
-  },
-  {
-    id: "INV202502",
-    name: "Electricity Bill",
-    dueDate: "Feb 04,2025",
-    status: "Paid",
-    amount: 311909,
-  },
-  {
-    id: "INV202503",
-    name: "Gym Membership",
-    dueDate: "Feb 23,2025",
-    status: "Unpaid",
-    amount: 425000,
-  },
-  {
-    id: "INV202504",
-    name: "Phone Bill",
-    dueDate: "Feb 23,2025",
-    status: "Pending",
-    amount: 148891,
-  },
-];
+// const demoInvoices: Invoice[] = [
+//   {
+//     invoiceNumber: "INV202501",
+//     name: "Internet Subscription",
+//     dueDate: "Jan 13,2025",
+//     status: "Paid",
+//     amount: 582901,
+//   },
+//   {
+//     invoiceNumber: "INV202502",
+//     name: "Electricity Bill",
+//     dueDate: "Feb 04,2025",
+//     status: "Paid",
+//     amount: 311909,
+//   },
+//   {
+//     invoiceNumber: "INV202503",
+//     name: "Gym Membership",
+//     dueDate: "Feb 23,2025",
+//     status: "Unpaid",
+//     amount: 425000,
+//   },
+//   {
+//     invoiceNumber: "INV202504",
+//     name: "Phone Bill",
+//     dueDate: "Feb 23,2025",
+//     status: "Pending",
+//     amount: 148891,
+//   },
+// ];
 
-export default function ListInvoiceComponent() {
-  const columnHelper = createColumnHelper<Invoice>();
+// const addInvoicesToFirestore = async () => {
+//   const invoicesCollection = collection(db, "invoices");
+
+//   for (const invoice of demoInvoices) {
+//     const invoiceWithId = {
+//       ...invoice,
+//       id: uuidv4(),
+//     };
+
+//     try {
+//       await addDoc(invoicesCollection, invoiceWithId);
+//       console.log(`Invoice ${invoice.invoiceNumber} added successfully.`);
+//     } catch (error) {
+//       console.error("Error adding document: ", error);
+//     }
+//   }
+// };
+
+export default function ListInvoiceComponent({
+  invoices,
+}: {
+  invoices: InvoiceInterface[];
+}) {
+  const columnHelper = createColumnHelper<InvoiceInterface>();
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const params: Params<InvoiceInterface> = {
+    filters: [
+      {
+        field: "status",
+        operator: "==",
+        value: searchQuery ? searchQuery : "Unpaid",
+      },
+      {
+        field: "amount",
+        operator: ">",
+        value: searchQuery ? parseInt(searchQuery, 10) : 100000,
+      },
+    ],
+    orderByField: "status",
+    orderDirection: "asc",
+    limit: 10,
+    initialData: invoices,
+  };
+
+  const { data, isLoading, error } = useGetInvoice(params);
+
+  console.log(data, "data");
 
   const {
     control,
@@ -90,7 +134,7 @@ export default function ListInvoiceComponent() {
     },
   });
 
-  const columns = useMemo<ColumnDef<Invoice, any>[]>(
+  const columns = useMemo<ColumnDef<InvoiceInterface, any>[]>(
     () => [
       columnHelper.accessor("name", {
         header: "Invoice",
@@ -98,7 +142,7 @@ export default function ListInvoiceComponent() {
           <div>
             <div>{info.getValue()}</div>
             <div style={{ color: "#666", fontSize: "0.875rem" }}>
-              {info.row.original.id}
+              {info.row.original.invoiceNumber}
             </div>
           </div>
         ),
@@ -143,6 +187,13 @@ export default function ListInvoiceComponent() {
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
+      {/* <button
+        onClick={() => {
+          addInvoicesToFirestore();
+        }}
+      >
+        tets
+      </button> */}
       <Box
         sx={{
           display: "flex",
@@ -201,7 +252,7 @@ export default function ListInvoiceComponent() {
         </Box>
       </Box>
 
-      <InvoiceTable data={demoInvoices} columns={columns} />
+      <InvoiceTable data={data ?? []} columns={columns as InvoiceInterface[]} />
     </Container>
   );
 }
