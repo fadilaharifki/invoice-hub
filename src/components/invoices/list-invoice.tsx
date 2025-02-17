@@ -20,9 +20,7 @@ import { getStatusColor, getTextColor } from "@/constants/colors";
 import { useGetInvoice } from "@/hooks/useInvoices";
 import { InvoiceInterface } from "@/interface/invoices";
 import { Params } from "@/interface/base";
-import { addDoc, collection } from "firebase/firestore";
-import { db } from "@/service/firebase-config";
-import { v4 as uuidv4 } from "uuid";
+import LoadingDialog from "../loading";
 
 const options = [
   {
@@ -119,7 +117,7 @@ export default function ListInvoiceComponent({
     initialData: invoices,
   };
 
-  const { data, isLoading, error } = useGetInvoice(params);
+  const { data, isLoading } = useGetInvoice(params);
 
   console.log(data, "data");
 
@@ -187,6 +185,7 @@ export default function ListInvoiceComponent({
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
+      <LoadingDialog open={isLoading} />
       {/* <button
         onClick={() => {
           addInvoicesToFirestore();
