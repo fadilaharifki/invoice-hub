@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import {
   Container,
   Typography,
@@ -21,10 +21,11 @@ import { useGetInvoice } from "@/hooks/useInvoices";
 import { InvoiceInterface } from "@/interface/invoices";
 import { Params } from "@/interface/base";
 import LoadingDialog from "../loading";
+import { useUrlParams } from "@/hooks/useParams";
 
 const options = [
   {
-    value: "all",
+    value: "",
     label: "All Status",
   },
   {
@@ -41,96 +42,98 @@ const options = [
   },
 ];
 
-// const demoInvoices: Invoice[] = [
-//   {
-//     invoiceNumber: "INV202501",
-//     name: "Internet Subscription",
-//     dueDate: "Jan 13,2025",
-//     status: "Paid",
-//     amount: 582901,
-//   },
-//   {
-//     invoiceNumber: "INV202502",
-//     name: "Electricity Bill",
-//     dueDate: "Feb 04,2025",
-//     status: "Paid",
-//     amount: 311909,
-//   },
-//   {
-//     invoiceNumber: "INV202503",
-//     name: "Gym Membership",
-//     dueDate: "Feb 23,2025",
-//     status: "Unpaid",
-//     amount: 425000,
-//   },
-//   {
-//     invoiceNumber: "INV202504",
-//     name: "Phone Bill",
-//     dueDate: "Feb 23,2025",
-//     status: "Pending",
-//     amount: 148891,
-//   },
-// ];
-
-// const addInvoicesToFirestore = async () => {
-//   const invoicesCollection = collection(db, "invoices");
-
-//   for (const invoice of demoInvoices) {
-//     const invoiceWithId = {
-//       ...invoice,
-//       id: uuidv4(),
-//     };
-
-//     try {
-//       await addDoc(invoicesCollection, invoiceWithId);
-//       console.log(`Invoice ${invoice.invoiceNumber} added successfully.`);
-//     } catch (error) {
-//       console.error("Error adding document: ", error);
-//     }
-//   }
-// };
+const searchableFields: (keyof InvoiceInterface)[] = ["name"];
 
 export default function ListInvoiceComponent({
   invoices,
 }: {
   invoices: InvoiceInterface[];
 }) {
+  const { getAllParams, setParams } = useUrlParams();
+
   const columnHelper = createColumnHelper<InvoiceInterface>();
-  const [searchQuery, setSearchQuery] = useState("");
 
-  const params: Params<InvoiceInterface> = {
-    filters: [
-      {
-        field: "status",
-        operator: "==",
-        value: searchQuery ? searchQuery : "Unpaid",
-      },
-      {
-        field: "amount",
-        operator: ">",
-        value: searchQuery ? parseInt(searchQuery, 10) : 100000,
-      },
-    ],
-    orderByField: "status",
-    orderDirection: "asc",
-    limit: 10,
-    initialData: invoices,
-  };
+  const urlParams = getAllParams();
 
-  const { data, isLoading } = useGetInvoice(params);
+  const filters = useMemo(() => {
+    return (
+      Object.entries(urlParams)
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        .filter(([_, value]) => value)
+        .flatMap(([key, value]) => {
+          if (key === "search") {
+            return searchableFields
+              .map((field) => ({
+                field,
+                operator: ">=",
+                value: value,
+              }))
+              .concat(
+                searchableFields.map((field) => ({
+                  field,
+                  operator: "<",
+                  value: value + "\uf8ff",
+                }))
+              );
+          }
 
-  console.log(data, "data");
+          return {
+            field: key as keyof InvoiceInterface,
+            operator: "==",
+            value: key === "amount" ? parseFloat(value) : value,
+          };
+        })
+    );
+  }, [urlParams]);
 
-  const {
-    control,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<any>({
+  const params = useMemo(() => {
+    return {
+      filters,
+      orderByFields: Object.entries(getAllParams()).flatMap(([key]) => {
+        if (key === "search") {
+          return searchableFields.map((field) => ({
+            field,
+            direction: "asc",
+          }));
+        }
+
+        return [
+          {
+            field: key,
+            direction: key === "status" ? "desc" : "asc",
+          },
+        ];
+      }),
+      orderDirection: "asc",
+      limit: 10,
+      initialData: invoices,
+    };
+  }, [filters, getAllParams, invoices]);
+
+  const { data, isLoading } = useGetInvoice(params as Params<InvoiceInterface>);
+
+  const { control, watch } = useForm<any>({
     defaultValues: {
       search: "",
       status: "",
     },
   });
+
+  useEffect(() => {
+    const subscription = watch((values) => {
+      const filteredValues: Record<string, string | null> = Object.fromEntries(
+        Object.entries(values)
+          .filter(
+            ([, value]) => value !== "" && value !== undefined && value !== null
+          )
+          .map(([key, value]) => [key, String(value)])
+      );
+
+      setParams(filteredValues);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [setParams, watch]);
 
   const columns = useMemo<ColumnDef<InvoiceInterface, any>[]>(
     () => [
@@ -186,13 +189,6 @@ export default function ListInvoiceComponent({
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <LoadingDialog open={isLoading} />
-      {/* <button
-        onClick={() => {
-          addInvoicesToFirestore();
-        }}
-      >
-        tets
-      </button> */}
       <Box
         sx={{
           display: "flex",
@@ -214,7 +210,7 @@ export default function ListInvoiceComponent({
             className="bg-white border-0 rounded-xl"
             control={control}
             name="search"
-            placeholder="Search"
+            placeholder="Search by name invoice"
             label="Search"
             showClearButton={false}
             labelOutside={false}

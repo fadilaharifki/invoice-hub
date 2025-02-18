@@ -18,7 +18,7 @@ import { db } from "./firebase-config";
 
 interface QueryParams {
   filters?: { field: string; operator: any; value: any }[];
-  orderByField?: string;
+  orderByFields?: { field: string; direction: "asc" | "desc" }[];
   orderDirection?: "asc" | "desc";
   limit?: number;
 }
@@ -38,10 +38,10 @@ export const getDocuments = async (
       });
     }
 
-    if (params.orderByField) {
-      constraints.push(
-        orderBy(params.orderByField, params.orderDirection || "asc")
-      );
+    if (params.orderByFields?.length) {
+      params.orderByFields.forEach(({ field, direction }) => {
+        constraints.push(orderBy(field, direction));
+      });
     }
 
     if (params.limit) {

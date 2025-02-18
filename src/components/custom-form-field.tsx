@@ -57,163 +57,172 @@ const CustomFormField = <T extends FieldValues>({
     <Controller
       name={name as Path<T>}
       control={control}
-      render={({ field, fieldState }) => (
-        <div
-          className={clsx(
-            "flex flex-col flex-1",
-            !fieldState.error ? "mb-6" : "mb-0"
-          )}
-        >
-          {labelOutside && (
-            <InputLabel sx={{ fontWeight: 500, marginBottom: 0.5 }}>
-              {label}
-              {required && <span style={{ color: "#ff0000" }}> *</span>}
-            </InputLabel>
-          )}
+      render={({ field, fieldState }) => {
+        return (
+          <div
+            className={clsx(
+              "flex flex-col flex-1",
+              !fieldState.error ? "mb-6" : "mb-0"
+            )}
+          >
+            {labelOutside && (
+              <InputLabel sx={{ fontWeight: 500, marginBottom: 0.5 }}>
+                {label}
+                {required && <span style={{ color: "#ff0000" }}> *</span>}
+              </InputLabel>
+            )}
 
-          {type === "currency" ? (
-            <NumericFormat
-              {...field}
-              className={clsx("", className)}
-              customInput={TextField}
-              thousandSeparator=","
-              decimalSeparator="."
-              fullWidth
-              error={!!fieldState.error}
-              helperText={fieldState.error?.message}
-              placeholder={placeholder}
-              size={size}
-              sx={{ ...sx }}
-              InputProps={{
-                style: { background: "#F0F0F0" },
-                startAdornment: (
-                  <InputAdornment position="start">{prefix}</InputAdornment>
-                ),
-                inputProps: {
-                  style: { background: "white", paddingLeft: 10 },
-                },
-                endAdornment:
-                  showClearButton && field.value ? (
-                    <InputAdornment position="end">
-                      <IconButton
-                        onClick={() => field.onChange("")}
-                        edge="end"
-                        size="small"
-                      >
-                        <ClearIcon fontSize="small" />
-                      </IconButton>
-                    </InputAdornment>
-                  ) : null,
-                ...InputProps,
-              }}
-              onValueChange={(values) => field.onChange(values.value)}
-            />
-          ) : type === "select" ? (
-            <Autocomplete
-              {...field}
-              fullWidth
-              options={options}
-              popupIcon={<ExpandMoreRounded />}
-              onChange={(_, value) => {
-                if (Array.isArray(value)) return;
-
-                const val = value?.value;
-                field.onChange(val ?? undefined);
-              }}
-              isOptionEqualToValue={(option, value) => {
-                if (!value || Array.isArray(value)) return false;
-                return option.value === value.value;
-              }}
-              getOptionLabel={(option) =>
-                typeof option === "string" ? option : option?.label || ""
-              }
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  className={clsx("", className)}
-                  fullWidth
-                  error={!!fieldState.error}
-                  helperText={fieldState.error?.message}
-                  placeholder={placeholder}
-                  size={size}
-                  sx={{ ...sx }}
-                />
-              )}
-            />
-          ) : type === "date" ? (
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DatePicker
+            {type === "currency" ? (
+              <NumericFormat
                 {...field}
                 className={clsx("", className)}
-                open={open}
-                onOpen={() => setOpen(true)}
-                onClose={() => setOpen(false)}
-                disableOpenPicker
-                format="DD/MM/YYYY"
+                customInput={TextField}
+                thousandSeparator=","
+                decimalSeparator="."
+                fullWidth
+                error={!!fieldState.error}
+                helperText={fieldState.error?.message}
+                placeholder={placeholder}
+                size={size}
                 sx={{ ...sx }}
-                slotProps={{
-                  textField: {
-                    placeholder: "DD/MM/YYYY",
-                    fullWidth: true,
-                    size: "small",
-                    error: !!fieldState.error,
-                    helperText: fieldState.error?.message,
-                    inputProps: { readOnly: true },
-                    onClick: () => setOpen(true),
-                    InputProps: {
-                      endAdornment:
-                        showClearButton && field.value ? (
-                          <InputAdornment position="end">
-                            <IconButton
-                              onClick={() => field.onChange(null)}
-                              edge="end"
-                              size="small"
-                            >
-                              <ClearIcon fontSize="small" />
-                            </IconButton>
-                          </InputAdornment>
-                        ) : null,
-                      ...InputProps,
-                    },
+                InputProps={{
+                  style: { background: "#F0F0F0" },
+                  startAdornment: (
+                    <InputAdornment position="start">{prefix}</InputAdornment>
+                  ),
+                  inputProps: {
+                    style: { background: "white", paddingLeft: 10 },
                   },
+                  endAdornment:
+                    showClearButton && field.value ? (
+                      <InputAdornment position="end">
+                        <IconButton
+                          onClick={() => field.onChange("")}
+                          edge="end"
+                          size="small"
+                        >
+                          <ClearIcon fontSize="small" />
+                        </IconButton>
+                      </InputAdornment>
+                    ) : null,
+                  ...InputProps,
                 }}
-                value={field.value ? dayjs(field.value) : null}
-                onChange={(date) =>
-                  field.onChange(date ? dayjs(date).format("YYYY-MM-DD") : null)
-                }
+                onValueChange={(values) => field.onChange(values.value)}
               />
-            </LocalizationProvider>
-          ) : (
-            <TextField
-              className={clsx("", className)}
-              fullWidth
-              type={type}
-              error={!!fieldState.error}
-              helperText={fieldState.error?.message}
-              sx={{ ...sx }}
-              {...field}
-              variant="outlined"
-              size={size}
-              placeholder={placeholder}
-              InputProps={{
-                endAdornment:
-                  showClearButton && field.value ? (
-                    <InputAdornment position="end">
-                      <IconButton
-                        onClick={() => field.onChange("")}
-                        edge="end"
-                        size="small"
-                      >
-                        <ClearIcon fontSize="small" />
-                      </IconButton>
-                    </InputAdornment>
-                  ) : null,
-                ...InputProps,
-              }}
-            />
-          )}
-        </div>
-      )}
+            ) : type === "select" ? (
+              <Autocomplete
+                {...field}
+                fullWidth
+                value={
+                  options.find((option) => option.value === field.value) || null
+                }
+                options={options}
+                popupIcon={<ExpandMoreRounded />}
+                onChange={(_, value) => {
+                  if (Array.isArray(value)) return;
+
+                  const val = value?.value;
+                  field.onChange(val ?? undefined);
+                }}
+                isOptionEqualToValue={(option, value) => {
+                  if (!value || Array.isArray(value)) return false;
+                  return option.value === value.value;
+                }}
+                getOptionLabel={(option) =>
+                  typeof option === "string" ? option : option?.label || ""
+                }
+                renderInput={(params) => {
+                  return (
+                    <TextField
+                      {...params}
+                      className={clsx("", className)}
+                      fullWidth
+                      error={!!fieldState.error}
+                      helperText={fieldState.error?.message}
+                      placeholder={placeholder}
+                      size={size}
+                      sx={{ ...sx }}
+                    />
+                  );
+                }}
+              />
+            ) : type === "date" ? (
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DatePicker
+                  {...field}
+                  className={clsx("", className)}
+                  open={open}
+                  onOpen={() => setOpen(true)}
+                  onClose={() => setOpen(false)}
+                  disableOpenPicker
+                  format="DD/MM/YYYY"
+                  sx={{ ...sx }}
+                  slotProps={{
+                    textField: {
+                      placeholder: "DD/MM/YYYY",
+                      fullWidth: true,
+                      size: "small",
+                      error: !!fieldState.error,
+                      helperText: fieldState.error?.message,
+                      inputProps: { readOnly: true },
+                      onClick: () => setOpen(true),
+                      InputProps: {
+                        endAdornment:
+                          showClearButton && field.value ? (
+                            <InputAdornment position="end">
+                              <IconButton
+                                onClick={() => field.onChange(null)}
+                                edge="end"
+                                size="small"
+                              >
+                                <ClearIcon fontSize="small" />
+                              </IconButton>
+                            </InputAdornment>
+                          ) : null,
+                        ...InputProps,
+                      },
+                    },
+                  }}
+                  value={field.value ? dayjs(field.value) : null}
+                  onChange={(date) =>
+                    field.onChange(
+                      date ? dayjs(date).format("YYYY-MM-DD") : null
+                    )
+                  }
+                />
+              </LocalizationProvider>
+            ) : (
+              <TextField
+                className={clsx("", className)}
+                fullWidth
+                type={type}
+                error={!!fieldState.error}
+                helperText={fieldState.error?.message}
+                sx={{ ...sx }}
+                {...field}
+                variant="outlined"
+                size={size}
+                placeholder={placeholder}
+                InputProps={{
+                  endAdornment:
+                    showClearButton && field.value ? (
+                      <InputAdornment position="end">
+                        <IconButton
+                          onClick={() => field.onChange("")}
+                          edge="end"
+                          size="small"
+                        >
+                          <ClearIcon fontSize="small" />
+                        </IconButton>
+                      </InputAdornment>
+                    ) : null,
+                  ...InputProps,
+                }}
+              />
+            )}
+          </div>
+        );
+      }}
     />
   );
 };
