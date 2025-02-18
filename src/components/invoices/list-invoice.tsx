@@ -15,13 +15,19 @@ import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import InvoiceTable from "@/components/table";
 import CustomFormField from "@/components/custom-form-field";
 import { useForm } from "react-hook-form";
-import { ViewHeadlineRounded } from "@mui/icons-material";
-import { getStatusColor, getTextColor } from "@/constants/colors";
-import { useGetInvoice } from "@/hooks/useInvoices";
+import {
+  BorderColorRounded,
+  CheckBox,
+  DeleteOutlineRounded,
+} from "@mui/icons-material";
+import { colors, getStatusColor, getTextColor } from "@/constants/colors";
+import { useDeleteInvoice, useGetInvoice } from "@/hooks/useInvoices";
 import { InvoiceInterface } from "@/interface/invoices";
 import { Params } from "@/interface/base";
 import LoadingDialog from "../loading";
 import { useUrlParams } from "@/hooks/useParams";
+import useToast from "@/hooks/useToast";
+import { useRouter } from "next/navigation";
 
 const options = [
   {
@@ -49,10 +55,11 @@ export default function ListInvoiceComponent({
 }: {
   invoices: InvoiceInterface[];
 }) {
+  const router = useRouter();
+  const { success } = useToast();
+
   const { getAllParams, setParams } = useUrlParams();
-
   const columnHelper = createColumnHelper<InvoiceInterface>();
-
   const urlParams = getAllParams();
 
   const filters = useMemo(() => {
@@ -110,7 +117,11 @@ export default function ListInvoiceComponent({
     };
   }, [filters, getAllParams, invoices]);
 
-  const { data, isLoading } = useGetInvoice(params as Params<InvoiceInterface>);
+  const {
+    data,
+    isLoading,
+    refetch: refetchDataInvoice,
+  } = useGetInvoice(params as Params<InvoiceInterface>);
 
   const { control, watch } = useForm<any>({
     defaultValues: {
@@ -134,6 +145,17 @@ export default function ListInvoiceComponent({
 
     return () => subscription.unsubscribe();
   }, [setParams, watch]);
+
+  const { mutate: mutateDeleteInvoice, isPending: isLoadingDeleteInvoice } =
+    useDeleteInvoice({
+      onSuccess: () => {
+        refetchDataInvoice();
+        success({
+          title: "Invoice delete successfully!",
+          icon: <CheckBox sx={{ color: colors.greenLime }} />,
+        });
+      },
+    });
 
   const columns = useMemo<ColumnDef<InvoiceInterface, any>[]>(
     () => [
@@ -176,19 +198,34 @@ export default function ListInvoiceComponent({
       columnHelper.display({
         id: "actions",
         header: "Actions",
-        cell: () => (
-          <IconButton size="small">
-            <ViewHeadlineRounded />
-          </IconButton>
+        cell: (info) => (
+          <>
+            <IconButton
+              size="small"
+              onClick={() => {
+                router.push(`/invoices/manage/${info.row.original.id}`);
+              }}
+            >
+              <BorderColorRounded />
+            </IconButton>
+            <IconButton
+              size="small"
+              onClick={() => {
+                mutateDeleteInvoice(info.row.original.id);
+              }}
+            >
+              <DeleteOutlineRounded />
+            </IconButton>
+          </>
         ),
       }),
     ],
-    [columnHelper]
+    [columnHelper, mutateDeleteInvoice, router]
   );
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      <LoadingDialog open={isLoading} />
+      <LoadingDialog open={isLoading || isLoadingDeleteInvoice} />
       <Box
         sx={{
           display: "flex",

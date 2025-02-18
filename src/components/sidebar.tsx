@@ -21,18 +21,19 @@ const menuItems = [
   {
     label: "Add Invoice",
     href: "/invoices/add",
+    active: ["/invoices/add"],
     icon: (color: string) => <Add sx={{ color: color }} />,
   },
   {
     label: "My Invoices",
     href: "/invoices/list",
+    active: ["/invoices/list", "/invoices/manage"],
     icon: (color: string) => <ViewListRoundedIcon sx={{ color: color }} />,
   },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
-
   return (
     <Drawer
       variant="permanent"
@@ -67,12 +68,18 @@ export default function Sidebar() {
                 component={Link}
                 href={menu.href}
                 sx={{
-                  color: pathname === menu.href ? "white" : "grey.600",
+                  color: menu.active.some((path) => pathname.includes(path))
+                    ? "white"
+                    : "grey.600",
                   "&:hover": { bgcolor: "grey.500" },
                 }}
               >
                 <ListItemIcon sx={{ color: "white" }}>
-                  {menu.icon(pathname === menu.href ? "white" : "grey.600")}
+                  {menu.icon(
+                    menu.active.some((path) => pathname.includes(path))
+                      ? "white"
+                      : "grey.600"
+                  )}
                 </ListItemIcon>
                 <ListItemText primary={menu.label} />
               </ListItemButton>

@@ -171,7 +171,7 @@ const CustomFormField = <T extends FieldValues>({
                           showClearButton && field.value ? (
                             <InputAdornment position="end">
                               <IconButton
-                                onClick={() => field.onChange(null)}
+                                onClick={() => field.onChange("")}
                                 edge="end"
                                 size="small"
                               >

@@ -1,19 +1,24 @@
 import React from "react";
-import { Dialog, DialogContent, CircularProgress } from "@mui/material";
+import { CircularProgress, Backdrop } from "@mui/material";
 
 interface LoadingDialogProps {
   open: boolean;
 }
 
-const LoadingDialog: React.FC<LoadingDialogProps> = ({ open }) => {
+const LoadingDialog: React.FC<LoadingDialogProps> = ({ open = false }) => {
+  const [openIs, setIsOpen] = React.useState(open);
+  const handleClose = () => {
+    setIsOpen(false);
+  };
+
   return (
-    <Dialog open={open} disableEscapeKeyDown>
-      <DialogContent
-        sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}
-      >
-        <CircularProgress />
-      </DialogContent>
-    </Dialog>
+    <Backdrop
+      sx={(theme) => ({ color: "#fff", zIndex: theme.zIndex.drawer + 1 })}
+      open={openIs}
+      onClick={handleClose}
+    >
+      <CircularProgress color="inherit" />
+    </Backdrop>
   );
 };
 

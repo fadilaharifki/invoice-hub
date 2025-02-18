@@ -56,7 +56,10 @@ export const getDocuments = async (
 };
 
 export const getDocumentById = async (collectionName: string, id: string) => {
-  const docRef = doc(db, collectionName, id);
+  const q = query(collection(db, collectionName), where("id", "==", id));
+  const querySnapshot = await getDocs(q);
+  const docRef = doc(db, collectionName, querySnapshot.docs[0].id);
+
   const snapshot = await getDoc(docRef);
   return snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : null;
 };
@@ -72,13 +75,20 @@ export const updateDocument = async (
   id: string,
   updatedData: any
 ) => {
-  const docRef = doc(db, collectionName, id);
+  const q = query(collection(db, collectionName), where("id", "==", id));
+  const querySnapshot = await getDocs(q);
+
+  const docRef = doc(db, collectionName, querySnapshot.docs[0].id);
+
   await updateDoc(docRef, updatedData);
   return { id, ...updatedData };
 };
 
 export const deleteDocument = async (collectionName: string, id: string) => {
-  const docRef = doc(db, collectionName, id);
+  const q = query(collection(db, collectionName), where("id", "==", id));
+  const querySnapshot = await getDocs(q);
+  const docRef = doc(db, collectionName, querySnapshot.docs[0].id);
+
   await deleteDoc(docRef);
   return id;
 };

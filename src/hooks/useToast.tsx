@@ -30,7 +30,7 @@ const useToast = () => {
   return {
     success: (options: ToastOptions) =>
       toast.success(renderMessage(options.title, options.description), {
-        position: options.position ?? "bottom-center",
+        position: options.position ?? "top-center",
         style: {
           ...baseStyle,
           background: "#EAF9ED",
@@ -43,7 +43,7 @@ const useToast = () => {
 
     error: (options: ToastOptions) =>
       toast.error(renderMessage(options.title, options.description), {
-        position: options.position ?? "bottom-center",
+        position: options.position ?? "top-center",
         style: {
           ...baseStyle,
           background: "#FDECEA",
@@ -56,7 +56,7 @@ const useToast = () => {
 
     warning: (options: ToastOptions) =>
       toast(renderMessage(options.title, options.description), {
-        position: options.position ?? "bottom-center",
+        position: options.position ?? "top-center",
         style: {
           ...baseStyle,
           background: "#FFF4E5",
@@ -69,7 +69,7 @@ const useToast = () => {
 
     info: (options: ToastOptions) =>
       toast(renderMessage(options.title, options.description), {
-        position: options.position ?? "bottom-center",
+        position: options.position ?? "top-center",
         style: {
           ...baseStyle,
           background: "#E3F2FD",

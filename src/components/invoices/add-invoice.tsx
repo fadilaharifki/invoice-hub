@@ -19,54 +19,93 @@ import CustomFormField from "@/components/custom-form-field";
 import { Add, CheckBox } from "@mui/icons-material";
 import useToast from "@/hooks/useToast";
 import { colors } from "@/constants/colors";
+import { useAddInvoice, useUpdateInvoice } from "@/hooks/useInvoices";
+import { AddInvoiceInterface } from "@/interface/invoices";
+import LoadingDialog from "../loading";
+import { useRouter } from "next/navigation";
+import { formatAmount } from "@/utils/format";
 
 const invoiceSchema = z.object({
   name: z.string().min(3, "Name must be at least 3 characters"),
-  number: z.string().min(1, "Number is required"),
+  invoiceNumber: z.string().min(1, "Invoice Number is required"),
   dueDate: z.string().min(1, "Due Date is required"),
   amount: z.string().min(1, "Amount is required"),
-  status: z.enum(["pending", "paid", "overdue"], {
+  status: z.enum(["pending", "paid", "unpaid"], {
     errorMap: () => ({ message: "Status is required" }),
   }),
 });
 
 type InvoiceFormData = z.infer<typeof invoiceSchema>;
 
-export default function AddInvoiceComponent() {
+export type InvoiceFormDataExtended = InvoiceFormData & {
+  id: string;
+};
+
+export default function AddInvoiceComponent({
+  data,
+}: {
+  data: InvoiceFormDataExtended;
+}) {
+  const router = useRouter();
+  const { mutate: mutateAddInvoice, isPending: isLoadingAddInvoice } =
+    useAddInvoice({
+      onSuccess: () => {
+        customToast(formRef, {
+          title: "Invoice added successfully!",
+          description:
+            "You can view and manage your invoice in the 'My Invoices' section.",
+          icon: <CheckBox sx={{ color: colors.greenLime }} />,
+        });
+      },
+    });
+
+  const { mutate: mutateEditInvoice, isPending: isLoadingEditInvoice } =
+    useUpdateInvoice({
+      onSuccess: () => {
+        customToast(formRef, {
+          title: "Invoice update successfully!",
+          description:
+            "You can view and manage your invoice in the 'My Invoices' section.",
+          icon: <CheckBox sx={{ color: colors.greenLime }} />,
+        });
+        router.back();
+      },
+    });
+
   const formRef = useRef<HTMLFormElement>(null);
   const { customToast } = useToast();
-  const { control, handleSubmit } = useForm<InvoiceFormData>({
+  const {
+    control,
+    handleSubmit,
+    formState: { isDirty },
+  } = useForm<InvoiceFormData>({
     resolver: zodResolver(invoiceSchema),
     defaultValues: {
-      name: "",
-      number: "",
-      dueDate: "",
-      amount: "",
-      status: undefined,
+      name: data?.name ?? "",
+      invoiceNumber: data?.invoiceNumber.replaceAll("INV", "") ?? "",
+      dueDate: data?.dueDate ?? "",
+      amount: formatAmount(data?.amount.toString()) ?? "",
+      status: data?.status ?? undefined,
     },
   });
 
   const [showSuccess] = useState(false);
 
-  const onSubmit = (data: InvoiceFormData) => {
-    customToast(formRef, {
-      title: "Invoice added successfully!",
-      description:
-        "You can view and manage your invoice in the 'My Invoices' section.",
-      icon: <CheckBox sx={{ color: colors.greenLime }} />,
-    });
-    console.log("Form Data:", data);
-    // alert("Invoice successfully added!");
+  const onSubmit = (values: InvoiceFormData) => {
+    if (data.id) {
+      mutateEditInvoice({ id: data.id, ...values });
+    } else mutateAddInvoice(values as unknown as AddInvoiceInterface);
   };
 
   return (
     <Box sx={{ px: 15, py: 3 }}>
+      <LoadingDialog open={isLoadingAddInvoice || isLoadingEditInvoice} />
       <Typography
         variant="h4"
         gutterBottom
         sx={{ fontWeight: "700", paddingBottom: 3 }}
       >
-        Add Invoice
+        {data?.id ? "Edit" : "Add"} Invoice
       </Typography>
 
       <Card>
@@ -95,7 +134,7 @@ export default function AddInvoiceComponent() {
               </Grid2>
               <Grid2>
                 <CustomFormField
-                  name="number"
+                  name="invoiceNumber"
                   label="Number"
                   required
                   type="text"
@@ -135,7 +174,7 @@ export default function AddInvoiceComponent() {
                   options={[
                     { label: "Pending", value: "pending" },
                     { label: "Paid", value: "paid" },
-                    { label: "Overdue", value: "overdue" },
+                    { label: "Unpaid", value: "unpaid" },
                   ]}
                 />
               </Grid2>
@@ -143,6 +182,7 @@ export default function AddInvoiceComponent() {
 
             <Grid2 sx={{ textAlign: "right" }}>
               <Button
+                disabled={!isDirty}
                 type="submit"
                 variant="contained"
                 size="large"
