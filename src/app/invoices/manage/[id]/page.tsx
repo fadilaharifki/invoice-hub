@@ -7,7 +7,7 @@ export default async function ManageInvoicePage({
 }: {
   params: { id: string };
 }) {
-  const { id } = params;
+  const { id } = await params;
   const data = await getDocumentById("invoices", id);
 
   return (

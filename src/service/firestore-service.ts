@@ -15,9 +15,10 @@ import {
   DocumentData,
 } from "firebase/firestore";
 import { db } from "./firebase-config";
+import { Operator } from "@/interface/base";
 
-interface QueryParams {
-  filters?: { field: string; operator: any; value: any }[];
+export interface QueryParams {
+  filters?: { field: string; operator: Operator; value: string }[];
   orderByFields?: { field: string; direction: "asc" | "desc" }[];
   orderDirection?: "asc" | "desc";
   limit?: number;

@@ -13,3 +13,15 @@ export interface Params<T> {
   limit?: number;
   initialData?: T[];
 }
+
+export type Operator =
+  | "=="
+  | "!="
+  | "<"
+  | "<="
+  | ">"
+  | ">="
+  | "array-contains"
+  | "array-contains-any"
+  | "in"
+  | "not-in";

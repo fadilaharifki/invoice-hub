@@ -22,12 +22,13 @@ import {
 } from "@mui/icons-material";
 import { colors, getStatusColor, getTextColor } from "@/constants/colors";
 import { useDeleteInvoice, useGetInvoice } from "@/hooks/useInvoices";
-import { InvoiceInterface } from "@/interface/invoices";
+import { InvoiceInterface, Status } from "@/interface/invoices";
 import { Params } from "@/interface/base";
 import LoadingDialog from "../loading";
 import { useUrlParams } from "@/hooks/useParams";
 import useToast from "@/hooks/useToast";
 import { useRouter } from "next/navigation";
+import useDebounce from "@/hooks/useDebounce";
 
 const options = [
   {
@@ -52,7 +53,9 @@ const searchableFields: (keyof InvoiceInterface)[] = ["name"];
 
 export default function ListInvoiceComponent({
   invoices,
+  defaultParams,
 }: {
+  defaultParams: { status: Status; search: string };
   invoices: InvoiceInterface[];
 }) {
   const router = useRouter();
@@ -61,6 +64,7 @@ export default function ListInvoiceComponent({
   const { getAllParams, setParams } = useUrlParams();
   const columnHelper = createColumnHelper<InvoiceInterface>();
   const urlParams = getAllParams();
+  const debouncedValue = useDebounce(urlParams.search, 500);
 
   const filters = useMemo(() => {
     return (
@@ -73,13 +77,13 @@ export default function ListInvoiceComponent({
               .map((field) => ({
                 field,
                 operator: ">=",
-                value: value,
+                value: debouncedValue,
               }))
               .concat(
                 searchableFields.map((field) => ({
                   field,
                   operator: "<",
-                  value: value + "\uf8ff",
+                  value: debouncedValue + "\uf8ff",
                 }))
               );
           }
@@ -91,7 +95,7 @@ export default function ListInvoiceComponent({
           };
         })
     );
-  }, [urlParams]);
+  }, [urlParams, debouncedValue]);
 
   const params = useMemo(() => {
     return {
@@ -107,7 +111,7 @@ export default function ListInvoiceComponent({
         return [
           {
             field: key,
-            direction: key === "status" ? "desc" : "asc",
+            direction: "asc",
           },
         ];
       }),
@@ -123,10 +127,10 @@ export default function ListInvoiceComponent({
     refetch: refetchDataInvoice,
   } = useGetInvoice(params as Params<InvoiceInterface>);
 
-  const { control, watch } = useForm<any>({
+  const { control, watch } = useForm<{ search: string; status: Status }>({
     defaultValues: {
-      search: "",
-      status: "",
+      search: defaultParams?.search ?? "",
+      status: defaultParams?.status ?? "",
     },
   });
 
